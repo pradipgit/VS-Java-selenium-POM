@@ -1,0 +1,11 @@
+{
+  "dev": {
+    "baseUrl": "https://dev.example.com"
+  },
+  "staging": {
+    "baseUrl": "https://staging.example.com"
+  },
+  "prod": {
+    "baseUrl": "https://naveenautomationlabs.com/opencart"
+  }
+}
