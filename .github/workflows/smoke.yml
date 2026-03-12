@@ -1,0 +1,49 @@
+name: Scheduled Smoke Tests
+
+on:
+  schedule:
+    # run at minute 0 every 2nd hour
+    - cron: '0 */2 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  smoke:
+    name: Run smoke tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Show Java & Chrome versions
+        run: |
+          java -version
+          google-chrome --version || google-chrome-stable --version || chromium --version || true
+
+      - name: Run Maven smoke tests
+        # Running in headless mode so the runner does not require a display
+        run: mvn -B -Dheadless=true -Denv=prod -Psmoke test
+
+      - name: Upload test/artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            target/allure-results
+            target/surefire-reports
